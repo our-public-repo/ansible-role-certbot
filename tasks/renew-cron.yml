@@ -1,4 +1,20 @@
 ---
+- name: Add Enviroment variable https_proxy
+  cron:
+    name: https_proxy
+    env: yes
+    job: "{{certbot_auto_renew_proxy_address}}:{{certbot_auto_renew_proxy_port}}"
+    user: "{{ certbot_auto_renew_user }}"
+    cron_file: "{{ certbot_auto_renew_cron_filename }}"
+
+- name: Add Enviroment variable http_proxy
+  cron:
+    name: http_proxy
+    env: yes
+    job: "{{certbot_auto_renew_proxy_address}}:{{certbot_auto_renew_proxy_port}}"
+    user: "{{ certbot_auto_renew_user }}"
+    cron_file: "{{ certbot_auto_renew_cron_filename }}"
+
 - name: Add cron job for certbot renewal (if configured).
   cron:
     name: Certbot automatic renewal.
@@ -6,3 +22,4 @@
     minute: "{{ certbot_auto_renew_minute }}"
     hour: "{{ certbot_auto_renew_hour }}"
     user: "{{ certbot_auto_renew_user }}"
+    cron_file: "{{ certbot_auto_renew_cron_filename }}"

@@ -5,6 +5,9 @@ certbot_auto_renew_user: "{{ ansible_user | default(lookup('env', 'USER')) }}"
 certbot_auto_renew_hour: "3"
 certbot_auto_renew_minute: "30"
 certbot_auto_renew_options: "--quiet"
+certbot_auto_renew_proxy_address: "http://proxy"
+certbot_auto_renew_proxy_port: "3128"
+certbot_auto_renew_cron_filename: "certbot_renew"
 
 certbot_testmode: false
 certbot_hsts: false
@@ -35,9 +38,18 @@ certbot_create_command: >-
   --email {{ cert_item.email | default(certbot_admin_email) }}
   {{ '--webroot-path ' if certbot_create_method == 'webroot'  else '' }}
   {{ cert_item.webroot | default(certbot_webroot) if certbot_create_method == 'webroot' else '' }}
+  {{ '--server ' if certbot_acme_other_provider else '' }}
+  {{ certbot_acme_server if certbot_acme_other_provider else '' }}
+  {{ '--eab-kid ' if certbot_acme_other_provider else '' }}
+  {{ certbot_acme_eab_kid if certbot_acme_other_provider else '' }}
+  {{ '--eab-hmac-key ' if certbot_acme_other_provider else '' }}
+  {{ certbot_acme_eab_hmac_key if certbot_acme_other_provider else '' }}
   -d {{ cert_item.domains | join(',') }}
   {{ '--pre-hook /etc/letsencrypt/renewal-hooks/pre/stop_services'
     if certbot_create_standalone_stop_services and certbot_create_method == 'standalone'
+  else '' }}
+  {{ '--deploy-hook /etc/letsencrypt/renewal-hooks/deploy/concatenate_certs'
+    if '"haproxy" in certbot_create_standalone_stop_services' and certbot_create_method == 'standalone'
   else '' }}
   {{ '--post-hook /etc/letsencrypt/renewal-hooks/post/start_services'
     if certbot_create_standalone_stop_services and certbot_create_method == 'standalone'
@@ -47,6 +59,7 @@ certbot_create_standalone_stop_services:
   - nginx
   # - apache
   # - varnish
+  # - haproxy
 
 # Available options: 'package', 'snap', 'source'.
 certbot_install_method: 'package'
@@ -58,3 +71,9 @@ certbot_keep_updated: true
 
 # Where to put Certbot when installing from source.
 certbot_dir: /opt/certbot
+
+# ACME support for other providers
+certbot_acme_other_provider: false
+certbot_acme_server: https://acme-v02.api.letsencrypt.org/directory
+certbot_acme_eab_kid: exampleeabkey
+certbot_acme_eab_hmac_key: exampleeabhmackey
