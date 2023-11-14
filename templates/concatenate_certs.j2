@@ -1,0 +1,7 @@
+#!/bin/bash
+# {{ ansible_managed }}
+
+umask 137
+
+echo "Concatenating certificate for {{ cert_item.domains[0] }}"
+cat /etc/letsencrypt/live/{{ cert_item.domains[0] }}/fullchain.pem /etc/letsencrypt/live/{{ cert_item.domains[0] }}/privkey.pem > /etc/ssl/private/{{ cert_item.domains[0] }}.pem
